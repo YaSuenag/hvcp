@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="*" Name="hvcp" Language="0" Version="0.1.0.0" Manufacturer="Y's Factory" UpgradeCode="1cdd3584-e06e-4ae1-9137-adc0087dd646">
+		<Package InstallerVersion="500" Comments="hvcp installer" Compressed="yes" InstallScope="perMachine" Platform="x64" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate EmbedCab="yes" />
+
+		<Feature Id="ProductFeature" Title="hvcp" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+
+	    <Feature Id="VCRedist" Title="Visual C++ Redistributable Runtime" AllowAdvertise="no" Display="hidden" Level="1">
+            <MergeRef Id="VCRedist"/>
+        </Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFiles64Folder">
+				<Directory Id="INSTALLFOLDER" Name="hvcp" />
+			</Directory>
+	    </Directory>
+	</Fragment>
+
+    <Fragment>
+        <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+            <Component Id="CLI" Win64="yes" Guid="2e58e338-b7a9-42a8-9759-a64c8f17aad5">
+                <File Id="cli" Source="$(var.cli.TargetPath)" KeyPath="yes" />
+            </Component>
+            <Component Id="DLL" Win64="yes" Guid="6e233087-5bc3-42f3-8647-f5594437b1c2">
+                <File Id="dll" Source="$(var.dll.TargetPath)" KeyPath="yes" />
+            </Component>
+            <Component Id="SystemConfiguration" Win64="yes" Guid="0f210b87-ec17-403a-a5f8-a37691559eff">
+                <Environment Id="UpdatePath" Name="PATH" Action="set" System="yes" Part="last" Value="[INSTALLFOLDER]" />
+
+	            <RegistryKey Action="createAndRemoveOnUninstall" ForceCreateOnInstall="yes" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization\GuestCommunicationServices\0000C544-FACB-11E6-BD58-64006A7986D3">
+                    <RegistryValue Name="ElementName" Type="string" Value="hvcp" KeyPath="yes" />
+                </RegistryKey>
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+	
+	<Fragment>
+		<DirectoryRef Id="TARGETDIR">
+			<Merge Id="VCRedist"
+                   SourceFile="$(var.VCToolsRedistDir)\MergeModules\Microsoft_VC143_CRT_x64.msm"
+                   Language="0"
+                   DiskId="1" />
+		</DirectoryRef>
+	</Fragment>
+</Wix>

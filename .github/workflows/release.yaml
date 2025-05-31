@@ -1,0 +1,64 @@
+name: Release MSI
+
+on:
+  release:
+    types: [ published ]
+
+concurrency:
+  group: publish
+  cancel-in-progress: true
+
+jobs:
+  version-detection:
+    runs-on: ubuntu-latest
+    outputs:
+      version-num: ${{ steps.set-version-number.outputs.VERSION_NUM }}
+    steps:
+      - id: set-version-number
+        name: Set version number
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION_NUM="${TAG:1}"
+          echo "VERSION_NUM=$VERSION_NUM" >> "$GITHUB_OUTPUT"
+
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Find VS path
+      run: |
+        $installPath = & vswhere.exe '-property' installationPath
+        $VCVAR_PATH = "$installPath\VC\Auxiliary\Build\vcvars64.bat"
+        "VCVAR_PATH=$VCVAR_PATH" | Out-File -FilePath $Env:GITHUB_ENV -Append
+      shell: pwsh
+    - name: Configure environment variables
+      run: |
+        call "${{ env.VCVAR_PATH }}"
+        echo VCToolsRedistDir=%VCToolsRedistDir%>> %GITHUB_ENV%
+      shell: cmd
+    - name: Configure MSBuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Build
+      run: msbuild hvcp.sln /p:Configuration=Release /p:Platform=x64 /p:VCToolsRedistDir="${{ env.VCToolsRedistDir }}" /t:installer
+      shell: pwsh
+    - name: 'Upload Release Asset'
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        release-tag: ${{ github.ref_name }}
+        files: installer/bin/Release/hvcp.msi
+        repo-token: ${{ github.token }}
+
+#  winget-pkg-pr:
+#    needs: [ version-detection, build ]
+#    runs-on: windows-2022
+#    steps:
+#      - name: Create PR
+#        uses: vedantmgoyal9/winget-releaser@main
+#        with:
+#          identifier: YaSuenag.hvcp
+#          installers-regex: '\.msi$'
+#          version: ${{ needs.version-detection.outputs.version-num }}
+#          token: ${{ secrets.WINGET_TOKEN }}

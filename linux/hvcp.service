@@ -1,0 +1,10 @@
+[Unit]
+Description=hvcp server
+Documentation=https://github.com/YaSuenag/hvcp/blob/main/README.md
+
+[Service]
+ExecStart=/usr/local/bin/hvcp-server
+Restart=always
+
+[Install]
+WantedBy=default.target
