@@ -28,6 +28,7 @@ jobs:
         with:
           languages: c-cpp
           queries: security-extended,security-and-quality
+          config-file: .github/codeql/codeql-config.yaml
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
