@@ -1,5 +1,6 @@
 hvcp
 ![CI](../../workflows/CI/badge.svg)
+![CodeQL](../../workflows/CodeQL/badge.svg)
 ===
 
 Transfer files between Hyper-V host and Linux guest OSes.
