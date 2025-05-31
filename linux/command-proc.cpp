@@ -210,8 +210,12 @@ void HVCPCommandProc::command_loop(){
           recv_string(filename, len);
           std::cout << "filename: " << filename << std::endl;
           if(path[strlen(path) - 1] == '/'){
-            strcat(path, filename);
-            std::cout << "remote path: " << path << std::endl;
+            if(strlen(path) + strlen(filename) < sizeof(path)){
+              strncat(path, filename, sizeof(path) - strlen(path) - 1);
+              std::cout << "remote path: " << path << std::endl;
+            } else {
+              throw ERR_INVALID_REMOTE_PATH;
+            }
           }
           send_result(HVCP_CMD_RESULT_OK, nullptr, 0);
         }
