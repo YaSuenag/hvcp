@@ -1,0 +1,3 @@
+paths-ignore:
+  - dll/simdjson/simdjson.cpp
+  - dll/simdjson/simdjson.h
