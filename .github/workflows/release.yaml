@@ -51,14 +51,14 @@ jobs:
         files: installer/bin/Release/hvcp.msi
         repo-token: ${{ github.token }}
 
-#  winget-pkg-pr:
-#    needs: [ version-detection, build ]
-#    runs-on: windows-2022
-#    steps:
-#      - name: Create PR
-#        uses: vedantmgoyal9/winget-releaser@main
-#        with:
-#          identifier: YaSuenag.hvcp
-#          installers-regex: '\.msi$'
-#          version: ${{ needs.version-detection.outputs.version-num }}
-#          token: ${{ secrets.WINGET_TOKEN }}
+  winget-pkg-pr:
+    needs: [ version-detection, build ]
+    runs-on: windows-latest
+    steps:
+      - name: Create PR
+        uses: vedantmgoyal9/winget-releaser@main
+        with:
+          identifier: YaSuenag.hvcp
+          installers-regex: '\.msi$'
+          version: ${{ needs.version-detection.outputs.version-num }}
+          token: ${{ secrets.WINGET_TOKEN }}
