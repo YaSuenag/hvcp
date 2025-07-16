@@ -98,10 +98,13 @@ void HVCPCommandProc::recv_remote_path(const size_t len){
 
 void HVCPCommandProc::recv_file(const size_t len){
   int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  if(fd == -1){
+    throw ERR_RECEIVE_FILE;
+  }
+
   size_t remains = len;
   char buf[BUF_SZ];
   do{
-    // Read data from socket even if fd == -1 to discard data in socket.
     long received = recv(sock, buf, std::min(sizeof(buf), remains), 0);
     if(received > 0){
       if(fd != -1){
@@ -115,13 +118,8 @@ void HVCPCommandProc::recv_file(const size_t len){
     }
   } while(remains > 0);
 
-  if(fd == -1){
-    throw ERR_RECEIVE_FILE;
-  }
-  else{
-    fchown(fd, target_uid, target_gid);
-    close(fd);
-  }
+  fchown(fd, target_uid, target_gid);
+  close(fd);
 }
 
 void HVCPCommandProc::send_file(){
@@ -186,6 +184,7 @@ void HVCPCommandProc::command_loop(){
           send_result(HVCP_CMD_RESULT_OK, nullptr, 0);
         }
         catch(HVCPServerErrorCode &e){
+          shutdown(sock, SHUT_RD);
           send_result(HVCP_CMD_RESULT_UNKNOWN_USER, nullptr, 0);
         }
         break;
@@ -197,6 +196,7 @@ void HVCPCommandProc::command_loop(){
           send_result(HVCP_CMD_RESULT_OK, nullptr, 0);
         }
         catch(HVCPServerErrorCode &e){
+          shutdown(sock, SHUT_RD);
           send_result(HVCP_CMD_RESULT_INVALID_PATH, nullptr, 0);
         }
         break;
@@ -220,6 +220,7 @@ void HVCPCommandProc::command_loop(){
           send_result(HVCP_CMD_RESULT_OK, nullptr, 0);
         }
         catch(HVCPServerErrorCode &e){
+          shutdown(sock, SHUT_RD);
           send_result(HVCP_CMD_RESULT_INVALID_PATH, nullptr, 0);
         }
         break;
@@ -231,6 +232,7 @@ void HVCPCommandProc::command_loop(){
           send_result(HVCP_CMD_RESULT_OK, nullptr, 0);
         }
         catch(HVCPServerErrorCode &e){
+          shutdown(sock, SHUT_RD);
           send_result(HVCP_CMD_RESULT_FILETRANSFER_ERROR, nullptr, 0);
         }
         break;
@@ -242,6 +244,7 @@ void HVCPCommandProc::command_loop(){
           std::cout << "sent: " << path << std::endl;
         }
         catch(HVCPServerErrorCode &e){
+          shutdown(sock, SHUT_RD);
           send_result(HVCP_CMD_RESULT_FILETRANSFER_ERROR, nullptr, 0);
         }
         break;
