@@ -143,6 +143,7 @@ void HVCPCommandProc::send_file(){
       size_t to_write = std::min(remains, sendfile_limit);
       ssize_t written = sendfile64(sock, fd, &ofs, to_write);
       if(written == -1){
+        close(fd);
         throw ERR_SEND_FILE;
       }
       remains -= written;
