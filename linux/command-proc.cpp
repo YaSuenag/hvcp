@@ -102,19 +102,23 @@ void HVCPCommandProc::recv_file(const size_t len){
     throw ERR_RECEIVE_FILE;
   }
 
+  int pipe_fds[2];
+  pipe(pipe_fds);
+  size_t page_sz = sysconf(_SC_PAGESIZE);
   size_t remains = len;
-  char buf[BUF_SZ];
-  do{
-    long received = recv(sock, buf, std::min(sizeof(buf), remains), 0);
-    if(received > 0){
-      write(fd, buf, received);
-      remains -= received;
-    }
-    else if(received == -1){
-      close(fd);
+  while(remains > 0){
+    size_t req = std::min(page_sz, remains);
+    ssize_t n = splice(sock, nullptr, pipe_fds[1], nullptr, req, SPLICE_F_MOVE);
+    if(n == -1){
       throw ERR_RECEIVE_FILE;
     }
-  } while(remains > 0);
+    splice(pipe_fds[0], nullptr, fd, nullptr, n, SPLICE_F_MOVE);
+
+    remains -= n;
+  }
+
+  close(pipe_fds[1]);
+  close(pipe_fds[0]);
 
   fchown(fd, target_uid, target_gid);
   close(fd);
