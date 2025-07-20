@@ -7,9 +7,6 @@
 #include <sys/types.h>
 
 
-#define BUF_SZ 2097152  // 2MB
-
-
 enum HVCPServerErrorCode{
   ERR_RECV_STRING,
   ERR_USER_NOT_FOUND,

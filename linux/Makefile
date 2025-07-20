@@ -5,12 +5,13 @@ CXXFLAGS = -c -g -O3 -Wall -std=c++17
 
 TARGET := hvcp-server
 OBJS := server.o command-proc.o
+LIBS := -luring
 
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) -o $@ $^
+	$(CXX) -o $@ $^ $(LIBS)
 
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $< -o $@

@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/sendfile.h>
+#include <liburing.h>
 
 #include "../hvcp-common.h"
 #include "command-proc.h"
@@ -102,21 +103,53 @@ void HVCPCommandProc::recv_file(const size_t len){
     throw ERR_RECEIVE_FILE;
   }
 
-  size_t remains = len;
-  char buf[BUF_SZ];
-  do{
-    long received = recv(sock, buf, std::min(sizeof(buf), remains), 0);
-    if(received > 0){
-      if(fd != -1){
-        write(fd, buf, received);
-      }
-      remains -= received;
+  int pipe_fds[2];
+  pipe(pipe_fds);
+  int pipe_sz = fcntl(pipe_fds[1], F_GETPIPE_SZ);
+  long page_sz = sysconf(_SC_PAGESIZE);
+
+  // HV transfer size = 1 page (assumes)
+  // num pages in pipes = pipe_sz / 4KB
+  unsigned int queue_depth = pipe_sz / page_sz;
+  struct io_uring ring;
+  io_uring_queue_init(queue_depth, &ring, 0);
+  struct io_uring_sqe *sqe;
+
+  size_t num_requests = len / page_sz;
+  size_t mod_size = len % page_sz;
+  while(num_requests > 0){
+    unsigned int n;
+    // sock -> pipe
+    for(n = 0; n < queue_depth && num_requests > 0; n++, num_requests--){
+      sqe = io_uring_get_sqe(&ring);
+      io_uring_prep_splice(sqe, sock, -1, pipe_fds[1], -1, page_sz, 0);
     }
-    else if(received == -1){
-      close(fd);
-      throw ERR_RECEIVE_FILE;
-    }
-  } while(remains > 0);
+    io_uring_submit_and_wait(&ring, n);
+    io_uring_cq_advance(&ring, n);
+
+    // pipe -> fd
+    sqe = io_uring_get_sqe(&ring);
+    io_uring_prep_splice(sqe, pipe_fds[0], -1, fd, -1, n * page_sz, 0);
+    io_uring_submit_and_wait(&ring, 1);
+    io_uring_cq_advance(&ring, 1);
+  }
+
+  // Copy remaining data...
+  if(mod_size > 0){
+    sqe = io_uring_get_sqe(&ring);
+    io_uring_prep_splice(sqe, sock, -1, pipe_fds[1], -1, mod_size, 0);
+    io_uring_sqe_set_flags(sqe, IOSQE_IO_LINK);
+
+    sqe = io_uring_get_sqe(&ring);
+    io_uring_prep_splice(sqe, pipe_fds[0], -1, fd, -1, mod_size, 0);
+
+    io_uring_submit_and_wait(&ring, 2);
+    io_uring_cq_advance(&ring, 2);
+  }
+
+  io_uring_queue_exit(&ring);
+  close(pipe_fds[0]);
+  close(pipe_fds[1]);
 
   fchown(fd, target_uid, target_gid);
   close(fd);
