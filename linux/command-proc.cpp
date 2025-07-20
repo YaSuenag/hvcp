@@ -107,9 +107,7 @@ void HVCPCommandProc::recv_file(const size_t len){
   do{
     long received = recv(sock, buf, std::min(sizeof(buf), remains), 0);
     if(received > 0){
-      if(fd != -1){
-        write(fd, buf, received);
-      }
+      write(fd, buf, received);
       remains -= received;
     }
     else if(received == -1){
