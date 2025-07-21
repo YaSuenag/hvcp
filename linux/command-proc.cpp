@@ -14,6 +14,31 @@
 #include "command-proc.h"
 
 
+class FileHandler{
+
+  private:
+    int _fd;
+
+  public:
+    FileHandler(const char *path, int flags, mode_t mode){
+      _fd = open(path, flags, mode);
+      if(_fd == -1){
+        perror("open");
+        throw ERR_OPEN_FILE;
+      }
+    }
+    FileHandler(const char *path, int flags) : FileHandler(path, flags, 0) {}
+
+    virtual ~FileHandler(){
+      close(_fd);
+    }
+
+    inline int fd(){
+      return _fd;
+    }
+};
+
+
 HVCPCommandProc::HVCPCommandProc(const int clsock) : sock(clsock){
   reset();
 }
@@ -97,40 +122,31 @@ void HVCPCommandProc::recv_remote_path(const size_t len){
 }
 
 void HVCPCommandProc::recv_file(const size_t len){
-  int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-  if(fd == -1){
-    throw ERR_RECEIVE_FILE;
-  }
+  FileHandler f(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
   size_t remains = len;
   char buf[TRANSMIT_BLOCK_SZ];
   do{
     long received = recv(sock, buf, std::min(sizeof(buf), remains), 0);
     if(received > 0){
-      if(write(fd, buf, received) != received){
-        close(fd);
+      if(write(f.fd(), buf, received) != received){
         throw ERR_RECEIVE_FILE;
       }
       remains -= received;
     }
     else if(received == -1){
-      close(fd);
       throw ERR_RECEIVE_FILE;
     }
   } while(remains > 0);
 
-  fchown(fd, target_uid, target_gid);
-  close(fd);
+  fchown(f.fd(), target_uid, target_gid);
 }
 
 void HVCPCommandProc::send_file(){
-  int fd = open(path, O_RDONLY, 0);
-  if(fd == -1){
-    throw ERR_SEND_FILE;
-  }
+  FileHandler f(path, O_RDONLY);
 
   struct stat64 st_buf;
-  if(fstat64(fd, &st_buf) == 0){
+  if(fstat64(f.fd(), &st_buf) == 0){
     auto result_cmd = HVCP_CMD_RESULT_OK;
     auto fsize = st_buf.st_size;
     send(sock, reinterpret_cast<char*>(&result_cmd), sizeof(result_cmd), 0);
@@ -142,20 +158,17 @@ void HVCPCommandProc::send_file(){
     off64_t ofs = 0;
     do{
       size_t to_write = std::min(remains, sendfile_limit);
-      ssize_t written = sendfile64(sock, fd, &ofs, to_write);
+      ssize_t written = sendfile64(sock, f.fd(), &ofs, to_write);
       if(written == -1){
-        close(fd);
         throw ERR_SEND_FILE;
       }
       remains -= written;
     } while (remains > 0);
 
-    close(fd);
     return;
   }
 
   // Error occurred
-  close(fd);
   throw ERR_SEND_FILE;
 }
 
