@@ -246,10 +246,9 @@ bool CopyFileToGuestInternal(const SOCKET sock, LPCWSTR LocalSrcPath, LPCWSTR Re
             constexpr DWORD transmitfile_limit = 2147483646;
             long long remains = fileSize.QuadPart;
             LARGE_INTEGER offset = { 0 };
-            constexpr DWORD transmit_size = 16 * 1024;
             do {
                 DWORD to_write = min(remains, static_cast<long long>(transmitfile_limit));
-                if (!TransmitFile(sock, src, to_write, transmit_size, nullptr, nullptr, 0)) {
+                if (!TransmitFile(sock, src, to_write, TRANSMIT_BLOCK_SZ, nullptr, nullptr, 0)) {
                     RaiseException(ERR_COPY_FILE_TO_GUEST, 0, 0, nullptr);
                 }
                 remains -= to_write;

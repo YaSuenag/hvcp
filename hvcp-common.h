@@ -20,4 +20,6 @@ enum HVCPCommandResult {
 	HVCP_CMD_RESULT_FILETRANSFER_ERROR
 };
 
+#define TRANSMIT_BLOCK_SZ 16384 /* 16KB */
+
 #endif

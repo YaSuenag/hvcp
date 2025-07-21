@@ -103,7 +103,7 @@ void HVCPCommandProc::recv_file(const size_t len){
   }
 
   size_t remains = len;
-  char buf[BUF_SZ];
+  char buf[TRANSMIT_BLOCK_SZ];
   do{
     long received = recv(sock, buf, std::min(sizeof(buf), remains), 0);
     if(received > 0){
