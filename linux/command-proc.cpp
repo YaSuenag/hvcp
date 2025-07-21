@@ -106,30 +106,27 @@ void HVCPCommandProc::recv_file(const size_t len){
   int pipe_fds[2];
   pipe(pipe_fds);
   int pipe_sz = fcntl(pipe_fds[1], F_GETPIPE_SZ);
-  long page_sz = sysconf(_SC_PAGESIZE);
-
-  // HV transfer size = 1 page (assumes)
-  // num pages in pipes = pipe_sz / 4KB
-  unsigned int queue_depth = pipe_sz / page_sz;
+  constexpr size_t transfer_sz = 16 * 1024; // specified by TransmitFile() in hvcp_internal.cpp
+  unsigned int queue_depth = pipe_sz / transfer_sz;
   struct io_uring ring;
   io_uring_queue_init(queue_depth, &ring, 0);
   struct io_uring_sqe *sqe;
 
-  size_t num_requests = len / page_sz;
-  size_t mod_size = len % page_sz;
+  size_t num_requests = len / transfer_sz;
+  size_t mod_size = len % transfer_sz;
   while(num_requests > 0){
     unsigned int n;
     // sock -> pipe
     for(n = 0; n < queue_depth && num_requests > 0; n++, num_requests--){
       sqe = io_uring_get_sqe(&ring);
-      io_uring_prep_splice(sqe, sock, -1, pipe_fds[1], -1, page_sz, 0);
+      io_uring_prep_splice(sqe, sock, -1, pipe_fds[1], -1, transfer_sz, 0);
     }
     io_uring_submit_and_wait(&ring, n);
     io_uring_cq_advance(&ring, n);
 
     // pipe -> fd
     sqe = io_uring_get_sqe(&ring);
-    io_uring_prep_splice(sqe, pipe_fds[0], -1, fd, -1, n * page_sz, 0);
+    io_uring_prep_splice(sqe, pipe_fds[0], -1, fd, -1, n * transfer_sz, 0);
     io_uring_submit_and_wait(&ring, 1);
     io_uring_cq_advance(&ring, 1);
   }

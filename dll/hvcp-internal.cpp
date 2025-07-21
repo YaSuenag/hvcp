@@ -245,10 +245,11 @@ bool CopyFileToGuestInternal(const SOCKET sock, LPCWSTR LocalSrcPath, LPCWSTR Re
             // https://learn.microsoft.com/ja-jp/windows/win32/api/winsock/nf-winsock-transmitfile
             constexpr DWORD transmitfile_limit = 2147483646;
             long long remains = fileSize.QuadPart;
-			LARGE_INTEGER offset = { 0 };
+            LARGE_INTEGER offset = { 0 };
+            constexpr DWORD transmit_size = 16 * 1024;
             do {
                 DWORD to_write = min(remains, static_cast<long long>(transmitfile_limit));
-                if (!TransmitFile(sock, src, to_write, 0, nullptr, nullptr, 0)) {
+                if (!TransmitFile(sock, src, to_write, transmit_size, nullptr, nullptr, 0)) {
                     RaiseException(ERR_COPY_FILE_TO_GUEST, 0, 0, nullptr);
                 }
                 remains -= to_write;
