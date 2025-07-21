@@ -107,7 +107,10 @@ void HVCPCommandProc::recv_file(const size_t len){
   do{
     long received = recv(sock, buf, std::min(sizeof(buf), remains), 0);
     if(received > 0){
-      write(fd, buf, received);
+      if(write(fd, buf, received) != received){
+        close(fd);
+        throw ERR_RECEIVE_FILE;
+      }
       remains -= received;
     }
     else if(received == -1){
