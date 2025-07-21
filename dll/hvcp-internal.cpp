@@ -272,7 +272,6 @@ bool CopyFileToGuestInternal(const SOCKET sock, LPCWSTR LocalSrcPath, LPCWSTR Re
     return true;
 }
 
-#define RCVBUF_SZ 4096
 bool CopyFileFromGuestInternal(const SOCKET sock, LPCWSTR RemoteSrcPath, LPWSTR LocalDestPath) {
     __try {
         /* Send remote path */
@@ -309,7 +308,7 @@ bool CopyFileFromGuestInternal(const SOCKET sock, LPCWSTR RemoteSrcPath, LPWSTR 
 			}
 			if (file_size > 0) {
 				long long remaining = file_size;
-				char rcvbuf[RCVBUF_SZ];
+				char rcvbuf[TRANSMIT_BLOCK_SZ];
 				while (remaining > 0) {
 					int recv_size = recv(sock, rcvbuf, min(remaining, sizeof(rcvbuf)), 0);
 					if (recv_size == SOCKET_ERROR) {
