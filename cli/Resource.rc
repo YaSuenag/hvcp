@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include "../version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -24,8 +25,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,0,0
- PRODUCTVERSION 0,1,0,0
+ FILEVERSION MAJOR,MINOR,PATCH,BUILD
+ PRODUCTVERSION MAJOR,MINOR,PATCH,BUILD
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -42,12 +43,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Y's Factory"
             VALUE "FileDescription", "hvcp CLI"
-            VALUE "FileVersion", "0.1.0.0"
+            VALUE "FileVersion", SEMVER
             VALUE "InternalName", "cli.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2025, Yasumasa Suenaga"
+            VALUE "LegalCopyright", LEGAL_COPYRIGHT
             VALUE "OriginalFilename", "hvcp.exe"
             VALUE "ProductName", "hvcp"
-            VALUE "ProductVersion", "0.1.0.0"
+            VALUE "ProductVersion", SEMVER
         END
     END
     BLOCK "VarFileInfo"
