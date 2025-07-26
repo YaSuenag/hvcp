@@ -17,13 +17,27 @@
 #include <regex>
 
 #include "../hvcp.h"
+#include "ProductInfo.h"
+
+
+void ShowHelpMessage(LPCWSTR exe) {
+	ProductInfo exe_info(nullptr);
+	ProductInfo engine_info(L"hvcp.dll");
+
+	std::wcout << exe_info.GetProductName() << std::endl;
+	std::wcout << exe_info.GetLegalCopyright() << std::endl;
+	std::wcout << L"  CLI version:    " << exe_info.GetProductVersion() << std::endl;
+	std::wcout << L"  Engine version: " << engine_info.GetProductVersion() << std::endl;
+	std::wcout << std::endl;
+	std::wcout << L"Usage:" << std::endl;
+	std::wcout << L"  " << exe << L" [src] [dest]" << std::endl;
+}
 
 
 int wmain(int argc, wchar_t* argv[])
 {
 	if (argc != 3) {
-		std::wcout << L"Usage:" << std::endl;
-		std::wcout << argv[0] << L" [src] [dest]" << std::endl;
+		ShowHelpMessage(argv[0]);
 		return 1;
 	}
 
