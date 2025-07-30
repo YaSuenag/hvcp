@@ -6,6 +6,8 @@ How to increase version number
     * This header is used in resource file - it affects property of both CLI and DLL
 * [installer/Product.wxs](installer/Product.wxs)
     * Product version
+* [installer/installer.wixproj](installer/installer.wixproj)
+    * Installer file name
 
 # Usage
 

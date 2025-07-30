@@ -25,11 +25,21 @@ function Generate-Version-Header-File([int]$major, [int]$minor, [int]$patch, [in
 }
 
 
-function Update-Installer-Version([int]$major, [int]$minor, [int]$patch, [int]$build){
+function Update-Installer-Version([int]$major, [int]$minor, [int]$patch, [int]$build, [string]$semver){
   $source_file = "$solutiondir\installer\Product.wxs"
   $xml = [xml]::new()
   $xml.Load($source_file)
   $xml.Wix.Product.Version = "$major.$minor.$patch.$build"
+  $xml.Save($source_file)
+
+  $source_file = "$solutiondir\installer\installer.wixproj"
+  $xml = [xml]::new()
+  $xml.Load($source_file)
+  $outputNameNode = $xml.SelectSingleNode("//*[local-name()='OutputName']")
+  Write-Output "OK1"
+  Write-Output $outputNameNode
+  Write-Output "OK2"
+  $outputNameNode.InnerText = "hvcp-$semver"
   $xml.Save($source_file)
 }
 
