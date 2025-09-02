@@ -11,7 +11,7 @@ You can download Windows installer from [release](https://github.com/YaSuenag/hv
 > hvcp use port `50500` with VSOCK address family on Linux. And also GUID `0000c544-facb-11e6-bd58-64006a7986d3` is used on Windows.  
 > According to [Microsoft Learn](https://learn.microsoft.com/en-us/virtualization/hyper-v-on-windows/user-guide/make-integration-service), GUID for Linux guest is templated. It means port `50500` is reserved by hvcp.
 
-hvcp gains about 2.4x performance from SCP on my PC.
+hvcp is the fastest than `scp` and [Copy-VMFile](https://learn.microsoft.com/ja-jp/powershell/module/hyper-v/copy-vmfile) on my PC.
 
 ![hvcp performance](hvcp-performance.png)
 
@@ -26,11 +26,12 @@ Environment:
 * Guest
     * Hyper-V Gen 2 guest
         * 4 vCPU
-        * 8192 MB memory (enables dynamic memory)
-    * Fedora 42
-        * kernel-6.14.4-300.fc42.x86\_64
-        * glibc-2.41-5.fc42.x86\_64
-        * openssh-server-9.9p1-10.fc42.x86\_64
+        * 8192 MB memory
+    * Arch Linux
+        * linux 6.16.3.arch1-1
+        * glibc 2.42+r17+gd7274d718e6f-1
+        * openssh 10.0p1-4
+        * hyperv 6.16-1
 
 # How to use
 
