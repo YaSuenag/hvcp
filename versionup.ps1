@@ -36,9 +36,7 @@ function Update-Installer-Version([int]$major, [int]$minor, [int]$patch, [int]$b
   $xml = [xml]::new()
   $xml.Load($source_file)
   $outputNameNode = $xml.SelectSingleNode("//*[local-name()='OutputName']")
-  Write-Output "OK1"
   Write-Output $outputNameNode
-  Write-Output "OK2"
   $outputNameNode.InnerText = "hvcp-$semver"
   $xml.Save($source_file)
 }
