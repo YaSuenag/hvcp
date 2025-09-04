@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <VCToolsRedistDir Condition=" '$(VCToolsRedistDir)' == '' ">C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\v143</VCToolsRedistDir>
-    <DefineConstants>VCToolsRedistDir=$(VCToolsRedistDir)</DefineConstants>
+    <DefineConstants>$(DefineConstants);VCToolsRedistDir=$(VCToolsRedistDir)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <ProductVersion>3.10</ProductVersion>
@@ -14,7 +14,7 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>Debug</DefineConstants>
+    <DefineConstants>$(DefineConstants);Debug</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Product.wxs" />
