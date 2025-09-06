@@ -4,8 +4,8 @@
 
 #define MAJOR 0
 #define MINOR 1
-#define PATCH 0
+#define PATCH 1
 #define BUILD 0
 
-#define SEMVER "0.1.0"
+#define SEMVER "0.1.1"
 #define LEGAL_COPYRIGHT "Copyright 2025 Yasumasa Suenaga"

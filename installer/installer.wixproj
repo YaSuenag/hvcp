@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <VCToolsRedistDir Condition=" '$(VCToolsRedistDir)' == '' ">C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\v143</VCToolsRedistDir>
@@ -8,7 +8,7 @@
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>99dc85d4-6fbf-4814-bdee-cdaf232ccd50</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>hvcp-0.1.0</OutputName>
+    <OutputName>hvcp-0.1.1</OutputName>
     <OutputType>Package</OutputType>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
