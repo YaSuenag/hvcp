@@ -6,6 +6,9 @@ CXXFLAGS = -c -g -O3 -Wall -std=c++17
 TARGET := hvcp-server
 OBJS := server.o command-proc.o
 
+PREFIX ?=
+BINDIR ?= /usr/local/bin
+
 
 all: $(TARGET)
 
@@ -19,9 +22,9 @@ clean:
 	$(RM) $(TARGET) $(OBJS)
 
 install: $(TARGET)
-	cp -f $(TARGET) /usr/local/bin/
-	cp -f hvcp.service /usr/lib/systemd/system/
+	cp -f $(TARGET) $(PREFIX)/$(BINDIR)
+	sed -e "s|^ExecStart=.\+$$|ExecStart=$(BINDIR)/$(TARGET)|" hvcp.service > $(PREFIX)/usr/lib/systemd/system/hvcp.service
 
 uninstall:
 	systemctl disable hvcp
-	$(RM) /usr/lib/systemd/system/hvcp.service /usr/local/bin/$(TARGET)
+	$(RM) $(PREFIX)/usr/lib/systemd/system/hvcp.service $(PREFIX)/$(BINDIR)/$(TARGET)

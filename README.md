@@ -39,8 +39,24 @@ Environment:
 
 ## 1. Start server on Linux
 
+Install hvcp on your Linux guest. You can install it via dnf.
+
+```
+sudo dnf install [hvcp RPM URL on GitHub Release]
+```
+
+Then you start hvcp-server on the console or systemd.
+
+Console:
+
 ```
 hvcp-server
+```
+
+Systemd:
+
+```
+sudo systemctl start hvcp
 ```
 
 ## 2. Copy files
@@ -79,6 +95,16 @@ sudo make install
 ```
 
 `make install` installs server daemon (`hvcp-server`) to `/usr/local/bin`, and also systemd unit file (`hvcp.service`) is copied into `/usr/lib/systemd/system`. You can enable it via `sudo systemd enable hvcp`.
+
+You can create hvcp-server RPM with SPEC file in [rpm](rpm). Container would be help to build.
+
+```
+mkdir /tmp/hvcp-rpms
+podman run -it --rm -v /path/to/hvcp/gitrepo:/usr/src/hvcp:Z -v /tmp/hvcp-rpms:/out:Z fedora:latest /usr/src/hvcp/rpm/rpmbuild.sh
+```
+
+> [!CAUTION]
+> Source directory of hvcp ( `/path/to/hvcp/gitrepo` in above) should be git repository because `rpmbuild.sh` would access it with `git`.
 
 ## Windows
 
