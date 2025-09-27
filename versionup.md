@@ -8,6 +8,10 @@ How to increase version number
     * Product version
 * [installer/installer.wixproj](installer/installer.wixproj)
     * Installer file name
+* [rpm/hvcp.spec](rpm/hvcp.spec)
+    * Version
+    * Copyright year
+    * Add change log for updating
 
 # Usage
 

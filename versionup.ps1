@@ -41,6 +41,39 @@ function Update-Installer-Version([int]$major, [int]$minor, [int]$patch, [int]$b
 }
 
 
+function Update-SPEC-Version([string]$semver){
+  $spec_file = "$solutiondir\rpm\hvcp.spec"
+  $content = Get-Content $spec_file -Encoding UTF8
+  $updatedContent = @()
+
+  foreach($line in $content){
+    if($line -match '^Version:\s+'){
+      $updatedContent += "Version: $semver"
+    }
+    elseif($line -match '^Copyright'){
+      $copyright_year = Get-Date -Format 'yyyy'
+      $updatedContent += "Copyright $copyright_year Yasumasa Suenaga"
+    }
+    elseif($line -match "^%changelog$"){
+      $currentDate = (Get-Date).ToString("ddd MMM dd yyyy", [System.Globalization.CultureInfo]::InvariantCulture)
+      $git_username = (& git config user.name).Trim()
+      $git_useremail = (& git config user.email).Trim()
+
+      $updatedContent += $line
+      $updatedContent += "* $currentDate $git_username <$git_useremail>"
+      $updatedContent += "- Up to $semver"
+    }
+    else{
+      $updatedContent += $line
+    }
+  }
+
+  $updatedContentText = $updatedContent -join "`n"
+  $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+  [System.IO.File]::WriteAllText($spec_file, $updatedContentText, $utf8NoBom)
+}
+
+
 $valid_version = $version -match '^(\d+)\.(\d+)\.(\d+)(\.(\d+))?$'
 if(!$valid_version){
   Write-Output 'Invalid version string'
@@ -57,3 +90,4 @@ Write-Output "Version: $semver"
 
 Generate-Version-Header-File $major $minor $patch $build $semver
 Update-Installer-Version $major $minor $patch $build $semver
+Update-SPEC-Version $semver
