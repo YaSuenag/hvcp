@@ -9,6 +9,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  rpmbuild:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Build RPMs
+      run: |
+        mkdir /tmp/hvcp-rpms
+        podman run -it --rm -v ${{ github.workspace }}:/usr/src/hvcp:Z -v /tmp/hvcp-rpms:/out:Z fedora:latest /usr/src/hvcp/rpm/rpmbuild.sh
+    - name: 'Upload Release Asset'
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        release-tag: ${{ github.ref_name }}
+        files: /tmp/hvcp-rpms/*.rpm;/tmp/hvcp-rpms/x86_64/*.rpm
+        repo-token: ${{ github.token }}
+
   version-detection:
     runs-on: ubuntu-latest
     outputs:
